@@ -1,6 +1,6 @@
 // -----------------------------------------------------------
 var gulp 			= require('gulp'),
-	sass 			= require('gulp-sass'),
+	sass 			= require('gulp-sass')(require('sass')),
 	autoPrefixer 	= require('gulp-autoprefixer'),
 	minifyCSS 		= require('gulp-minify-css'),
 	browserify 		= require('gulp-browserify'),
@@ -13,17 +13,14 @@ var gulp 			= require('gulp'),
 	cache 			= require('gulp-cache'),
 	webserver 		= require('gulp-webserver'),
 	iconfont 		= require('gulp-iconfont'),
-	iconfontCss 	= require('gulp-iconfont-css');
+	iconfontCss 	= require('gulp-iconfont-css'),
+	runSequence 	= require('run-sequence');
 // -----------------------------------------------------------
 
 
 gulp.task('sass', function() {
 	gulp.src("src/sass/*.scss")
-	.pipe(sass())
-	.on('error', function(error) {
-		console.log(error);
-		this.emit('end');
-	})
+	.pipe(sass().on('error', sass.logError))
 	.pipe(autoPrefixer())
 	.pipe(minifyCSS())
 	.pipe(gulp.dest("build/css"));
@@ -113,4 +110,6 @@ gulp.task('watch', function() {
 	gulp.watch('src/bin/**', 				['insert-bin'	]);
 });
 gulp.task('build-all',['iconfont','sass','templates','browserify','bundle-libs','images','insert-bin']);
-gulp.task('default',['watch','webserver']);
+gulp.task('default', function(callback) {
+  runSequence('build-all', ['watch', 'webserver'], callback);
+});
